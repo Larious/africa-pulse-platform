@@ -1,0 +1,105 @@
+cities:
+  - city_id: lagos_ng
+    city_name: Lagos
+    country_code: NGA
+    country_name: Nigeria
+    timezone: Africa/Lagos
+    currency_code: NGN
+    reference_latitude: 6.5244
+    reference_longitude: 3.3792
+    commercial_snapshot_bbox:
+      south: 6.35
+      west: 3.25
+      north: 6.68
+      east: 3.55
+    road_samples:
+      - road_sample_id: lagos_victoria_island
+        label: Victoria Island
+        latitude: 6.4281
+        longitude: 3.4219
+      - road_sample_id: lagos_ikoyi
+        label: Ikoyi
+        latitude: 6.4531
+        longitude: 3.4252
+      - road_sample_id: lagos_ikeja
+        label: Ikeja
+        latitude: 6.6018
+        longitude: 3.3515
+      - road_sample_id: lagos_yaba
+        label: Yaba
+        latitude: 6.5168
+        longitude: 3.3846
+      - road_sample_id: lagos_lekki
+        label: Lekki
+        latitude: 6.4377
+        longitude: 3.4723
+
+  - city_id: abuja_ng
+    city_name: Abuja
+    country_code: NGA
+    country_name: Nigeria
+    timezone: Africa/Lagos
+    currency_code: NGN
+    reference_latitude: 9.0765
+    reference_longitude: 7.3986
+    commercial_snapshot_bbox:
+      south: 8.95
+      west: 7.35
+      north: 9.18
+      east: 7.58
+    road_samples:
+      - road_sample_id: abuja_cbd
+        label: Central Business District
+        latitude: 9.0588
+        longitude: 7.4897
+      - road_sample_id: abuja_wuse
+        label: Wuse
+        latitude: 9.0759
+        longitude: 7.4821
+      - road_sample_id: abuja_maitama
+        label: Maitama
+        latitude: 9.0922
+        longitude: 7.4951
+      - road_sample_id: abuja_garki
+        label: Garki
+        latitude: 9.0304
+        longitude: 7.4898
+      - road_sample_id: abuja_jabi
+        label: Jabi
+        latitude: 9.0728
+        longitude: 7.4162
+
+  - city_id: cape_town_za
+    city_name: Cape Town
+    country_code: ZAF
+    country_name: South Africa
+    timezone: Africa/Johannesburg
+    currency_code: ZAR
+    reference_latitude: -33.9249
+    reference_longitude: 18.4241
+    commercial_snapshot_bbox:
+      south: -34.05
+      west: 18.32
+      north: -33.82
+      east: 18.58
+    road_samples:
+      - road_sample_id: cape_town_cbd
+        label: City Centre
+        latitude: -33.9249
+        longitude: 18.4241
+      - road_sample_id: cape_town_woodstock
+        label: Woodstock
+        latitude: -33.9276
+        longitude: 18.4486
+      - road_sample_id: cape_town_sea_point
+        label: Sea Point
+        latitude: -33.9185
+        longitude: 18.3865
+      - road_sample_id: cape_town_rondebosch
+        label: Rondebosch
+        latitude: -33.9574
+        longitude: 18.4727
+      - road_sample_id: cape_town_claremont
+        label: Claremont
+        latitude: -33.9808
+        longitude: 18.4655
