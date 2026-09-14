@@ -2,7 +2,7 @@
 
 ## Verified on 2026-09-14
 
-A clean clone of `https://github.com/Larious/africa-pulse-platform.git` was created outside the working directory. A new Python environment installed `.[dev]`, then completed `pytest -q` and `ruff check .` successfully. The dashboard module imported without a TomTom key. The presentation dependency is now declared under the `presentation` extra and is checked in GitHub Actions.
+A clean clone of `https://github.com/Larious/africa-pulse-platform.git` was created outside the working directory from commit `b19c63a`. A new Python environment installed `.[dev,presentation]`, then completed `pytest -q` (16 passed) and `ruff check .` successfully. The dashboard module and `python-pptx` both imported without a TomTom key. The presentation dependency is declared under the `presentation` extra and is checked in GitHub Actions.
 
 The clean installation correctly rejected TomTom ingestion without `TOMTOM_API_KEY`, with a clear error message. This proves a read-only warehouse consumer does not need the collection credential while ingestion does.
 
