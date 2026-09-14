@@ -71,7 +71,10 @@ def scenario_rows(start_date: date = date(2026, 8, 11), days: int = 35) -> list[
 
 def generate(client) -> int:
     create_schema(client)
-    return insert_rows(client, "synthetic_demo.city_daily_scenario", scenario_rows())
+    count = insert_rows(client, "synthetic_demo.city_daily_scenario", scenario_rows())
+    from africa_pulse.synthetic_analytics import install
+    install(client, SCENARIO_ID)
+    return count
 
 
 def query_rows(client, sql: str, parameters: dict | None = None) -> list[dict]:
@@ -79,12 +82,13 @@ def query_rows(client, sql: str, parameters: dict | None = None) -> list[dict]:
 
 
 def summary(client) -> dict:
-    latest = query_rows(client, "SELECT * FROM synthetic_demo.city_daily_scenario FINAL WHERE scenario_id = {scenario_id:String} ORDER BY local_date DESC LIMIT 1 BY city_id", {"scenario_id": SCENARIO_ID})
-    answers = query_rows(client, "SELECT city_name, round(avg(congestion_ratio), 3) AS avg_congestion_ratio, round(corr(rainfall_mm, congestion_ratio), 3) AS rainfall_congestion_correlation, round(avg(pm2_5), 1) AS avg_pm2_5, round(avg(fuel_usd_per_litre), 2) AS avg_fuel_usd_per_litre, any(commercial_services_per_100k) AS services_per_100k, round(avg(city_intelligence_score), 1) AS average_score, any(trend_status) AS trend_status FROM synthetic_demo.city_daily_scenario FINAL WHERE scenario_id = {scenario_id:String} GROUP BY city_name ORDER BY average_score DESC", {"scenario_id": SCENARIO_ID})
-    return {"scenario_id": SCENARIO_ID, "seed": SEED, "label": "SYNTHETIC DEMONSTRATION ONLY - NOT REAL CITY DATA", "latest": latest, "answers": answers}
+    from africa_pulse.synthetic_analytics import summary as analytical_summary
+    return analytical_summary(client, SCENARIO_ID)
 
 
-PAGE = """<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Africa Pulse | Synthetic Demonstration</title><style>:root{--ink:#102a43;--muted:#627d98;--line:#d9e2ec;--paper:#f8fbfd;--red:#b42318;--blue:#0b6e99}*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--paper);color:var(--ink)}header{background:#102a43;color:white;padding:24px max(24px,calc((100vw - 1160px)/2))}h1{margin:0;font-size:26px}header p{margin:6px 0 0;color:#cbd8e6}main{max-width:1160px;margin:auto;padding:24px}.warning{background:#fee4e2;border:1px solid #fecdca;color:#8a1c13;padding:14px;font-weight:750}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}.tile,table{background:white;border:1px solid var(--line);border-radius:6px}.tile{padding:18px}.city{font-size:18px;font-weight:750}.metric{font-size:27px;font-weight:750;margin:14px 0 3px}.label{font-size:12px;color:var(--muted)}section{margin-top:28px}h2{font-size:17px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:11px;border-bottom:1px solid var(--line)}th{background:#edf3f8;color:#486581}@media(max-width:720px){.grid{grid-template-columns:1fr}th:nth-child(3),td:nth-child(3){display:none}}</style></head><body><header><h1>Africa Pulse: Synthetic Scenario</h1><p>Separate capability demonstration for Lagos, Abuja, and Cape Town</p></header><main><div class='warning'>SYNTHETIC DEMONSTRATION ONLY. Values are deterministic simulated inputs for testing analytical logic. They are not observations, forecasts, or claims about any city.</div><section><h2>Latest simulated city measures</h2><div id='cards' class='grid'></div></section><section><h2>Question-supporting simulated outputs: 35-day scenario</h2><table><thead><tr><th>City</th><th>Congestion</th><th>Rainfall relationship</th><th>PM2.5</th><th>Fuel USD/L</th><th>Services / 100k</th><th>Score</th><th>Trend</th></tr></thead><tbody id='answers'></tbody></table></section></main><script>const n=(v,d=1)=>Number(v).toFixed(d);async function load(){const d=await (await fetch('/api/summary')).json();document.querySelector('#cards').innerHTML=d.latest.map(r=>`<article class='tile'><div class='city'>${r.city_name}</div><div class='metric'>${n(r.city_intelligence_score)}</div><div class='label'>Synthetic City Intelligence Score</div><div class='label'>${n(100*r.congestion_ratio)}% congestion | ${n(r.rainfall_mm)} mm rainfall</div></article>`).join('');document.querySelector('#answers').innerHTML=d.answers.map(r=>`<tr><td>${r.city_name}</td><td>${n(100*r.avg_congestion_ratio)}%</td><td>${n(r.rainfall_congestion_correlation,2)} correlation</td><td>${n(r.avg_pm2_5)} ug/m3</td><td>$${n(r.avg_fuel_usd_per_litre,2)}</td><td>${n(r.services_per_100k)}</td><td>${n(r.average_score)}</td><td>${r.trend_status}</td></tr>`).join('')}load().catch(console.error)</script></body></html>"""
+from pathlib import Path
+
+PAGE = Path(__file__).with_name("synthetic_dashboard.html").read_text()
 
 
 class Handler(BaseHTTPRequestHandler):

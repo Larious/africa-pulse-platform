@@ -1,37 +1,60 @@
-# Synthetic Demonstration Environment
+# Synthetic analytical demonstration
 
-The instructor has authorized synthetic data where a legitimate source is unavailable. This environment demonstrates the analytical capabilities that require missing fuel data, approved population denominators, and long observation history. It is not part of the production evidence path.
+Instructor permission was communicated by the user after a Teams meeting. This scenario is entirely synthetic, including population, fuel, service counts and trip demand. It makes no claims about actual cities. Production `warehouse` and `mart` are not queried or modified.
 
-## Separation rules
-
-- Synthetic rows are stored only in the `synthetic_demo` ClickHouse database.
-- Real source facts remain in `warehouse`; real business marts remain in `mart`.
-- The synthetic dashboard runs separately on port `8766`; the real dashboard remains on port `8765`.
-- Every screen, query result, and presentation reference must say `SYNTHETIC DEMONSTRATION ONLY`.
-- Synthetic values must never be described as observed, live, current, forecast, or sourced city facts.
-
-## Run it
+## Run from VS Code's integrated terminal
 
 ```bash
-# Creates 105 rows: 35 days x 3 cities, with a fixed seed.
 .venv/bin/python -m africa_pulse.synthetic_demo --generate
-
-# Serves the separate synthetic dashboard.
 .venv/bin/python -m africa_pulse.synthetic_demo --dashboard
 ```
 
-Open `http://127.0.0.1:8766` in VS Code Simple Browser. The original real-data dashboard remains `http://127.0.0.1:8765`.
+Open http://127.0.0.1:8766. If the installed local launchd service already runs the dashboard, do not launch a second server. Restart it after editing code with:
 
-## Scenario assumptions
+```bash
+launchctl kickstart -k gui/$(id -u)/com.africa-pulse.synthetic-dashboard
+```
 
-The deterministic scenario uses seed `20260914` and creates 35 days for Lagos, Abuja, and Cape Town. It includes sampled congestion, rainfall, PM2.5, nitrogen dioxide, USD exchange rate, fuel price, population, commercial service count, commercial services per 100,000 people, an illustrative score, and an improvement/deterioration label.
+Docker and ClickHouse must be running. The launchd service is specific to this Mac; the Python commands work in a fresh clone.
 
-Numbers are generated from city-specific baseline parameters plus bounded random variation. Rainfall contributes a small positive effect to congestion; fuel prices and FX move gradually; pollution varies with congestion; service density uses fixed illustrative population and commercial-service assumptions. These relationships exist only to test the dashboard and analytical logic. They do not establish causal relationships or represent actual conditions in any city.
+## Reproducibility and grain
 
-## How to present it
+Seed 20260914 produces 105 daily records, three cities × 35 days, from 11 August through 14 September 2026. Regeneration replaces logical scenario/city/day records when read with FINAL. Generated timestamps vary; simulated values do not. The synthetic daily table retains legacy prototype score/trend fields for compatibility, but the analytical dashboard ignores those fields and calculates results from the underlying measures.
 
-Say:
+Four domain views (`synthetic_demo.mobility`, `environment`, `market`, `commercial`) project this seeded table. They are not independent source integrations. Five executable joins are provided in `analytics/synthetic_business_questions.sql`. The dashboard executes those queries and shows their results.
 
-> This is a segregated synthetic scenario, permitted for the capstone to demonstrate missing analytical capability. It shows how the platform calculates fuel-normalized transport context, commercial services per population, 35-day trends, and a fully eligible illustrative score. The real dashboard and warehouse remain separate, and no synthetic value is used as a claim about Lagos, Abuja, or Cape Town.
+## Deliverable map
 
-The real platform still reports its true state: it has two days of real fast-source history, lacks a fuel-market source, and does not publish its real City Intelligence Score.
+| Deliverable | Dashboard evidence |
+|---|---|
+| Executive comparison | Major latest indicators, score, and calculated congestion change/trend |
+| Mobility | Daily simulated trips and congestion charts; rainfall correlation with paired-day count |
+| Environment | Rainfall, PM2.5 and NO2 charts; cross-city air/mobility analysis |
+| Economic | FX and fuel charts, first-to-last changes, local/USD fuel and fuel-only cost per 100 km |
+| City Intelligence | Five component contributions, weights, total and coverage |
+| Five cross-domain questions | Five actual SQL joins between synthetic domain views |
+| Uncertainty | Remove air and direction components: coverage falls to 65% and score becomes unavailable; population-denominator sensitivity is stated |
+
+## Formula v2_demo
+
+Latest seven days are used for mobility, environment and FX stability. All components are clipped to 0–100. The final score sums the following components multiplied by their weights:
+
+- Mobility (30%): 100 × (1 − mean congestion).
+- Commercial (20%): services per 100,000 / 400 × 100.
+- Environment (20%): 100 − 2 × mean PM2.5.
+- Market (15%): 100 − 1000 × seven-day population standard deviation of FX / mean FX.
+- Direction (15%): 50 − 500 × (final-seven-day mean congestion − first-seven-day mean congestion).
+
+The five-component weights match the project specification. Normalization constants are provisional demonstration choices; they are not externally validated scientific thresholds. The demonstration requires every component, seven FX days and 28 trend days (stricter than the minimum 80% coverage specification). Missing components suppress the score rather than reweight remaining components.
+
+Trend is calculated from the records: change below −1 percentage point means improving, above +1 means deteriorating, otherwise stable. This is congestion direction only, not a claim about whole-city development. Changes are descriptive, not statistically significant findings.
+
+Trips = rounded 100,000 × (1 − congestion), multiplied by 0.75 at weekends. This is a constructed demand series, not TomTom vehicle counts. Rainfall and pollution relationships are deliberately embedded in the generator, so correlations illustrate calculation rather than discover causal effects.
+
+USD/litre = fuel price in local currency / local currency per USD. Fuel-only USD/100 km assumes 8 litres/100 km and excludes wages, maintenance, fares and other transport costs. Service density compares city-level provision; without district data it cannot identify within-city concentrations.
+
+## Defense
+
+Show the executive table, select a city to trace daily measurements, then show the five join results and score decomposition. Finally show the missing-component experiment. Explain that synthetic permission lets the team demonstrate analytical logic; it does not validate real-world conclusions or complete real-source acquisition.
+
+Validation includes live execution of all five queries, three 35-day series, score-contribution equality, reversed-data trend reversal, short-history suppression, missing-component suppression, and dashboard HTTP checks. The production presentation remains a separate real-data briefing; use this dashboard as the synthetic analytical demonstration.
