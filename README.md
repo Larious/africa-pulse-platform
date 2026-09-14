@@ -28,6 +28,8 @@ See `docs/runbook.md`.
 
 The `analytics/business_questions.sql` asset provides the implemented cross-domain questions. Run `analytics/question_readiness.sql` before interpreting results, and read `docs/question-coverage-plan.md` before claiming trend, fuel-economics, population-density, or score conclusions.
 
+For an instructor-authorized capability demonstration using segregated simulated values, see `docs/synthetic-demonstration.md`. It runs on a separate database and dashboard and must never be presented as live source evidence.
+
 ## View the live dashboard
 
 After ClickHouse and at least one collection workflow are running, start the read-only local dashboard:
