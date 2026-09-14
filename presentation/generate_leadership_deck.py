@@ -86,6 +86,8 @@ def main():
     runs = query(client, "SELECT status, count() AS count FROM control.ingestion_run FINAL GROUP BY status")
     traffic_fact_count = query(client, "SELECT count() AS count FROM warehouse.fact_traffic_flow_observation FINAL")[0]["count"]
     latest_commercial = query(client, "SELECT status, error_message FROM control.ingestion_run FINAL WHERE source_id = 'openstreetmap_overpass_commercial_v1' ORDER BY started_at DESC LIMIT 1")[0]
+    readiness_sql = (Path(__file__).parents[1] / "analytics" / "question_readiness.sql").read_text().rstrip().removesuffix(";")
+    readiness = query(client, readiness_sql)
     run_counts = {row["status"]: row["count"] for row in runs}
     city_names = {"lagos_ng": "Lagos", "abuja_ng": "Abuja", "cape_town_za": "Cape Town"}
 
@@ -148,7 +150,18 @@ def main():
     add_text(slide, "Current rule", 0.55, 4.90, 1.5, 0.24, 14, NAVY, True)
     add_text(slide, "A numeric score requires approved commercial-density denominators, seven days of FX history, and 28 days of trend history. Until then, `unavailable` is the correct decision-grade result.", 0.55, 5.32, 11.7, 0.52, 16, INK)
 
-    slide = new_slide(prs, "The next decision is operational maturity, not new features", "The platform is demonstrable today; scheduled collection will turn the initial vertical slice into a historical decision asset.", 7)
+    slide = new_slide(prs, "Every required question has an evidence gate", "The platform reports whether a conclusion is supported, partial, or not yet answerable.", 7)
+    for index, row in enumerate(readiness):
+        x = 0.55 + (index % 2) * 6.15
+        y = 1.92 + (index // 2) * 1.27
+        status = row["answer_status"].replace("_", " ").upper()
+        accent = GREEN if row["answer_status"] == "ready_for_descriptive_analysis" else AMBER if row["answer_status"] == "partial" else RED
+        box(slide, x, y, 5.55, 0.98, PALE)
+        add_text(slide, row["question_id"].replace("_", " ").title(), x + 0.20, y + 0.17, 3.70, 0.18, 11, NAVY, True)
+        add_text(slide, status, x + 3.98, y + 0.17, 1.30, 0.18, 10, accent, True, PP_ALIGN.RIGHT)
+        add_text(slide, row["evidence_or_blocker"], x + 0.20, y + 0.47, 5.05, 0.30, 8, MUTED)
+
+    slide = new_slide(prs, "The next decision is operational maturity, not new features", "The platform is demonstrable today; scheduled collection will turn the initial vertical slice into a historical decision asset.", 8)
     actions = [("1", "Schedule every two hours", "Build the FX and traffic history window", TEAL), ("2", "Monitor operational health", "Act on freshness, failure, and quality evidence", GREEN), ("3", "Approve score inputs", "Confirm municipal boundaries and commercial-density denominator", AMBER), ("4", "Scale after measurement", "Add workers or aggregates only when the workload proves the need", RED)]
     for index, (number, title, detail, color) in enumerate(actions):
         x = 0.65 + (index % 2) * 6.15

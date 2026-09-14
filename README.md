@@ -26,7 +26,7 @@ For a presentation or assessment, use `docs/presentation-defense-guide.md` first
 
 See `docs/runbook.md`.
 
-The `analytics/business_questions.sql` asset provides the five cross-domain questions required for assessment. Read `docs/analytical-deliverables.md` before interpreting initial observations as trends.
+The `analytics/business_questions.sql` asset provides the implemented cross-domain questions. Run `analytics/question_readiness.sql` before interpreting results, and read `docs/question-coverage-plan.md` before claiming trend, fuel-economics, population-density, or score conclusions.
 
 ## View the live dashboard
 
