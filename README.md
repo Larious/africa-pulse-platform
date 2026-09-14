@@ -26,6 +26,8 @@ For a presentation or assessment, use `docs/technical-defense-runbook.md`. It co
 
 See `docs/runbook.md`.
 
+The `analytics/business_questions.sql` asset provides the five cross-domain questions required for assessment. Read `docs/analytical-deliverables.md` before interpreting initial observations as trends.
+
 ## View the live dashboard
 
 After ClickHouse and at least one collection workflow are running, start the read-only local dashboard:

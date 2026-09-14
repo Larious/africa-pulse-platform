@@ -146,7 +146,7 @@ def run() -> dict[str, int | str]:
     run_id = uuid4()
     started_at = datetime.now(UTC)
     insert_run_state(client, run_id, SOURCE_ID, "running", started_at)
-    source_client = TomTomTrafficClient(settings.tomtom_api_key)
+    source_client = TomTomTrafficClient(settings.require_tomtom_api_key())
     received = inserted = quarantined = 0
 
     try:

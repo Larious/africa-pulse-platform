@@ -30,7 +30,7 @@ PAGE = """<!doctype html>
 <body>
   <header><h1>Africa Pulse</h1><p>Live warehouse operations for Lagos, Abuja, and Cape Town</p></header>
   <main>
-    <div class="meta"><span id="updated">Loading live warehouse data...</span><span class="status">Read-only local dashboard</span></div>
+    <div class="meta"><span id="updated">Loading warehouse data...</span><span id="health" class="status">Checking source freshness</span></div>
     <section><h2>Daily Mobility</h2><div id="cities" class="grid"></div></section>
     <section><h2>City Intelligence Score Coverage</h2><div id="scores" class="grid"></div></section>
     <section><h2>Recent Source Runs</h2><div id="runs"></div></section>
@@ -49,10 +49,14 @@ PAGE = """<!doctype html>
       const data = await response.json();
       if (data.error) throw new Error(data.error);
       document.querySelector('#updated').textContent = `Updated ${new Date(data.generated_at).toLocaleString()}`;
+      const stale = data.freshness.some(row => row.is_stale);
+      const health = document.querySelector('#health');
+      health.textContent = stale ? 'Stale source data present' : 'All monitored sources within freshness threshold';
+      health.style.color = stale ? 'var(--red)' : 'var(--green)';
       document.querySelector('#cities').innerHTML = data.mobility.map(row => `<article class="tile"><div class="city">${cityName(row.city_id)}</div><div class="metric">${number(100 * row.median_congestion_ratio)}%</div><div class="label">Median congestion ratio</div><div class="bar"><i style="width:${Math.min(100, Math.max(0, row.valid_sample_coverage_pct))}%"></i></div><div class="label">${number(row.valid_sample_coverage_pct, 0)}% validated road-sample coverage</div></article>`).join('') || '<div class="empty">No mobility mart records yet.</div>';
       document.querySelector('#scores').innerHTML = data.scores.map(row => `<article class="tile"><div class="city">${cityName(row.city_id)}</div><div class="metric">${escape(row.score_status)}</div><div class="label">Score status</div><div class="bar"><i style="width:${Math.min(100, Math.max(0, row.weighted_coverage_pct))}%"></i></div><div class="label">${number(row.weighted_coverage_pct, 0)}% weighted component coverage</div></article>`).join('') || '<div class="empty">No score mart records yet.</div>';
       document.querySelector('#runs').innerHTML = table(data.runs, [{key:'source_id',label:'Source'}, {key:'status',label:'Status',render:v=>`<span class="pill ${v === 'failed' ? 'failed' : ''}">${escape(v)}</span>`}, {key:'records_received',label:'Received'}, {key:'records_inserted',label:'Inserted'}, {key:'started_at',label:'Started'}]);
-      document.querySelector('#freshness').innerHTML = table(data.freshness, [{key:'domain',label:'Domain'}, {key:'freshest_observation_at',label:'Latest observation'}, {key:'age_minutes',label:'Age (minutes)'}]);
+      document.querySelector('#freshness').innerHTML = table(data.freshness, [{key:'domain',label:'Domain'}, {key:'freshest_observation_at',label:'Latest observation'}, {key:'age_minutes',label:'Age (minutes)'}, {key:'is_stale',label:'Status',render:v=>`<span class="pill ${v ? 'failed' : ''}">${v ? 'stale' : 'current'}</span>`}]);
     }
     load().catch(error => { document.querySelector('#updated').textContent = `Dashboard error: ${error.message}`; });
     setInterval(() => load().catch(() => {}), 60000);
@@ -66,11 +70,12 @@ def named_rows(client, query):
 
 
 def dashboard_summary(client):
+    freshness = named_rows(client, "SELECT 'traffic' AS domain, max(observed_at) AS freshest_observation_at, dateDiff('minute', freshest_observation_at, now()) AS age_minutes, age_minutes > 180 AS is_stale FROM warehouse.fact_traffic_flow_observation FINAL UNION ALL SELECT 'weather', max(observed_at), dateDiff('minute', max(observed_at), now()), dateDiff('minute', max(observed_at), now()) > 180 FROM warehouse.fact_weather_observation FINAL UNION ALL SELECT 'air_quality', max(observed_at), dateDiff('minute', max(observed_at), now()), dateDiff('minute', max(observed_at), now()) > 180 FROM warehouse.fact_air_quality_observation FINAL UNION ALL SELECT 'fx', max(observed_at), dateDiff('minute', max(observed_at), now()), dateDiff('minute', max(observed_at), now()) > 180 FROM warehouse.fact_fx_rate FINAL UNION ALL SELECT 'commercial', max(commercial.snapshot_at), dateDiff('minute', max(commercial.snapshot_at), now()), dateDiff('minute', max(commercial.snapshot_at), now()) > 11520 OR (SELECT argMax(status, started_at) FROM control.ingestion_run FINAL WHERE source_id = 'openstreetmap_overpass_commercial_v1') != 'completed' FROM warehouse.fact_commercial_poi_snapshot AS commercial FINAL INNER JOIN control.ingestion_run AS run FINAL ON commercial.run_id = run.run_id WHERE run.status = 'completed'")
     return {
         "mobility": named_rows(client, "SELECT * FROM mart.city_mobility_daily FINAL ORDER BY local_date DESC, city_id LIMIT 3"),
         "scores": named_rows(client, "SELECT * FROM mart.city_intelligence_daily FINAL ORDER BY local_date DESC, city_id LIMIT 3"),
         "runs": named_rows(client, "SELECT source_id, status, records_received, records_inserted, started_at FROM control.ingestion_run FINAL ORDER BY started_at DESC LIMIT 10"),
-        "freshness": named_rows(client, "SELECT 'traffic' AS domain, max(observed_at) AS freshest_observation_at, dateDiff('minute', freshest_observation_at, now()) AS age_minutes FROM warehouse.fact_traffic_flow_observation FINAL UNION ALL SELECT 'weather', max(observed_at), dateDiff('minute', max(observed_at), now()) FROM warehouse.fact_weather_observation FINAL UNION ALL SELECT 'air_quality', max(observed_at), dateDiff('minute', max(observed_at), now()) FROM warehouse.fact_air_quality_observation FINAL UNION ALL SELECT 'fx', max(observed_at), dateDiff('minute', max(observed_at), now()) FROM warehouse.fact_fx_rate FINAL"),
+        "freshness": freshness,
     }
 
 

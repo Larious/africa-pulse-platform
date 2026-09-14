@@ -41,3 +41,11 @@
 **Decision:** Store World Bank official exchange-rate and inflation releases by country, indicator, and reference year.
 
 **Reason:** The source is periodic country context. Joining it to a city mart does not turn it into a city observation.
+
+## ADR-007: Retry transient Overpass failures without masking an outage
+
+**Incident:** On 2026-09-14, a scheduled commercial snapshot encountered an Overpass HTTP 504 timeout, followed by HTTP 429 rate limiting.
+
+**Decision:** Retry transient transport failures and HTTP 429/5xx responses up to three times with bounded backoff. Leave request and schema errors as immediate failures.
+
+**Result:** The collection run remained failed after the provider continued rejecting requests. Ten valid category observations had already been written by the earlier implementation before the third city failed; they remain traceable to the failed run and are not silently deleted. The revised workflow buffers future commercial facts until every city response succeeds. The dashboard marks commercial freshness stale, and no replacement data was invented. The next weekly schedule will retry within the source's published cadence.

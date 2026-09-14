@@ -14,7 +14,7 @@ The first startup runs the SQL files in `warehouse/ddl/` and creates the `contro
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e '.[dev]'
+pip install -e '.[dev,presentation]'
 pytest
 ruff check .
 ```
@@ -53,14 +53,22 @@ Every future ingestion command must record a `run_id`, write source evidence met
 
 ## Schedule the collection
 
-Use the supplied shell entrypoint with a host scheduler. It deliberately keeps scheduling separate from the application so the same command is usable locally, from cron, or from a CI/CD runner.
+Use the supplied macOS installer to create per-user `launchd` schedules. It records output under ignored `logs/` and keeps the absolute project path out of Git.
 
 ```bash
-chmod +x orchestration/run_collections.sh
-0 */2 * * * /absolute/path/to/africa-pulse/orchestration/run_collections.sh >> /absolute/path/to/africa-pulse/data/collection.log 2>&1
+chmod +x orchestration/*.sh
+./orchestration/install_macos_launchd.sh
+launchctl print gui/$(id -u)/com.africa-pulse.fast
 ```
 
-TomTom runs every two hours. The other sources may return duplicate logical observations during that period; their deterministic observation keys make a repeat execution safe. A scheduler failure is visible in `control.ingestion_run`, and the next scheduled execution can be rerun after the source problem is resolved.
+TomTom, weather, air quality, and FX run every two hours. Commercial snapshots run weekly and World Bank releases monthly. Each job refreshes dependent marts. A scheduler failure is visible in `control.ingestion_run`, and the next scheduled execution can be rerun after the source problem is resolved.
+
+For an isolated local warehouse, choose unused ports before startup:
+
+```bash
+CLICKHOUSE_HTTP_PORT=18123 CLICKHOUSE_NATIVE_PORT=19000 docker compose up -d
+CLICKHOUSE_PORT=18123 .venv/bin/python -m africa_pulse.orchestration.refresh_marts
+```
 
 ## Operational evidence
 
@@ -72,4 +80,4 @@ Run [analytics/operational_health.sql](../analytics/operational_health.sql) in C
 .venv/bin/python -m africa_pulse.dashboard
 ```
 
-Open `http://127.0.0.1:8765`. In VS Code, use the Command Palette, select `Simple Browser: Show`, then enter that address. The dashboard is local and read-only. It shows the current mobility mart, score coverage, recent runs, and source freshness.
+Open `http://127.0.0.1:8765`. In VS Code, use the Command Palette, select `Simple Browser: Show`, then enter that address. The dashboard is local and read-only. It shows mobility, score coverage, recent runs, and source freshness. A red freshness status means the stored warehouse data is stale; it must not be presented as current.

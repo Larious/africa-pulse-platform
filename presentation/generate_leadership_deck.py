@@ -1,15 +1,15 @@
 """Generate a leadership briefing from the live local ClickHouse warehouse."""
 
-import json
 from pathlib import Path
-from urllib.parse import quote
-from urllib.request import urlopen
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt
+
+from africa_pulse.settings import Settings
+from africa_pulse.warehouse.client import get_client
 
 OUT = Path(__file__).with_name("Africa_Pulse_Live_Platform_Briefing.pptx")
 NAVY = RGBColor(16, 42, 67)
@@ -24,10 +24,8 @@ PALE = RGBColor(248, 251, 253)
 WHITE = RGBColor(255, 255, 255)
 
 
-def query(sql):
-    url = "http://localhost:8123/?query=" + quote(sql + " FORMAT JSONEachRow")
-    with urlopen(url, timeout=10) as response:  # nosec B310 - fixed local ClickHouse URL
-        return [json.loads(line) for line in response.read().decode().splitlines()]
+def query(client, sql):
+    return list(client.query(sql).named_results())
 
 
 def add_text(slide, text, x, y, w, h, size=16, color=INK, bold=False, align=PP_ALIGN.LEFT):
@@ -82,9 +80,10 @@ def metric_card(slide, title, value, detail, x, accent):
 
 
 def main():
-    mobility = query("SELECT city_id, median_congestion_ratio, valid_sample_coverage_pct FROM mart.city_mobility_daily FINAL ORDER BY local_date DESC, city_id LIMIT 3")
-    scores = query("SELECT city_id, weighted_coverage_pct, score_status FROM mart.city_intelligence_daily FINAL ORDER BY local_date DESC, city_id LIMIT 3")
-    runs = query("SELECT status, count() AS count FROM control.ingestion_run FINAL GROUP BY status")
+    client = get_client(Settings.from_environment())
+    mobility = query(client, "SELECT city_id, median_congestion_ratio, valid_sample_coverage_pct FROM mart.city_mobility_daily FINAL ORDER BY local_date DESC, city_id LIMIT 3")
+    scores = query(client, "SELECT city_id, weighted_coverage_pct, score_status FROM mart.city_intelligence_daily FINAL ORDER BY local_date DESC, city_id LIMIT 3")
+    runs = query(client, "SELECT status, count() AS count FROM control.ingestion_run FINAL GROUP BY status")
     run_counts = {row["status"]: row["count"] for row in runs}
     city_names = {"lagos_ng": "Lagos", "abuja_ng": "Abuja", "cape_town_za": "Cape Town"}
 

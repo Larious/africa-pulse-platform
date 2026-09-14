@@ -31,3 +31,19 @@ Primary quality rule: `air_quality.non_negative`.
 Required values: USD base currency, NGN or ZAR quote currency, positive rate, source ID, run ID, and observed/received timestamps.
 
 Primary quality rule: `fx.rate_positive`.
+
+## Commercial Snapshot
+
+`warehouse.fact_commercial_poi_snapshot` grain: one OpenStreetMap category count for one city candidate area and snapshot time.
+
+Required values: city ID, category, non-negative count, area-definition version, source ID, run ID, snapshot timestamp, and response checksum.
+
+Primary quality rule: `commercial.count_non_negative`. Invalid values are quarantined; valid counts remain explicitly scoped to `candidate_area_bbox_v1` until an approved boundary replaces it.
+
+## Economic Indicator Release
+
+`warehouse.fact_economic_indicator_release` grain: one World Bank country indicator release for one reference year.
+
+Required values: country code, indicator code and name, reference year, finite numeric value, source ID, run ID, received timestamp, and response checksum.
+
+Primary quality rule: `economic.value_present`. A release may arrive after its reference year; both the source reference year and platform received time remain stored.

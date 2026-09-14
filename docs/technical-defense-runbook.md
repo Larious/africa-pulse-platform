@@ -71,6 +71,8 @@ ORDER BY observed_at DESC;
 
 Find the associated quality outcomes using `run_id` and `source_id = 'tomtom_traffic_flow_v4'`. Invalid confidence, negative speed, or non-positive free-flow speed fails validation, is written to `quality.rule_result`, and is quarantined before reaching the traffic fact. Do not edit the source fact to hide the anomaly; preserve evidence and document the resolution.
 
+For a changed source field or malformed response, show the failed `control.ingestion_run` record and confirm no normalized fact was created. Review the preserved raw evidence where terms allow, update the connector with a regression test, then rerun the affected interval. `docs/operational-scenarios.md` records the recovery procedure.
+
 ## Explain the city score limitation
 
 Run:

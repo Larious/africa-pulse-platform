@@ -1,3 +1,4 @@
+import sys
 from datetime import UTC, datetime
 from uuid import uuid4
 
@@ -23,9 +24,13 @@ def run_commercial(client, cities):
     insert_run_state(client, run_id, COMMERCIAL_SOURCE_ID, "running", started_at)
     received = inserted = 0
     try:
+        snapshots = []
         for city in cities:
             response = OverpassCommercialClient().fetch_snapshot(city)
             payload_uri, checksum = persist_json_payload(COMMERCIAL_SOURCE_ID, response.payload, response.received_at)
+            snapshots.append((city, response, payload_uri, checksum))
+
+        for city, response, payload_uri, checksum in snapshots:
             evidence_id = write_evidence(client, run_id, COMMERCIAL_SOURCE_ID, city.city_id, response, payload_uri, checksum)
             for category, count in response.category_counts.items():
                 received += 1
@@ -73,12 +78,20 @@ def run_economic_context(client, cities):
     return {"source_id": ECONOMIC_SOURCE_ID, "records_received": received, "records_inserted": inserted}
 
 
-def run():
+def run(mode="all"):
     client = get_client(Settings.from_environment())
     cities = load_cities()
     seed_reference_data(client, cities)
-    return [run_commercial(client, cities), run_economic_context(client, cities)]
+    results = []
+    if mode in {"all", "commercial"}:
+        results.append(run_commercial(client, cities))
+    if mode in {"all", "economic"}:
+        results.append(run_economic_context(client, cities))
+    return results
 
 
 if __name__ == "__main__":
-    print(run())
+    mode = sys.argv[1].removeprefix("--") if len(sys.argv) > 1 else "all"
+    if mode not in {"all", "commercial", "economic"}:
+        raise SystemExit("Usage: context_collection.py [--commercial|--economic]")
+    print(run(mode))

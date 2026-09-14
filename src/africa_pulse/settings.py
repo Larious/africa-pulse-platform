@@ -21,7 +21,7 @@ def load_local_env() -> None:
 
 @dataclass(frozen=True)
 class Settings:
-    tomtom_api_key: str
+    tomtom_api_key: str | None
     clickhouse_host: str
     clickhouse_port: int
     clickhouse_username: str
@@ -30,13 +30,15 @@ class Settings:
     @classmethod
     def from_environment(cls) -> "Settings":
         load_local_env()
-        api_key = os.getenv("TOMTOM_API_KEY")
-        if not api_key:
-            raise RuntimeError("TOMTOM_API_KEY is required. Add it to the ignored .env file.")
         return cls(
-            tomtom_api_key=api_key,
+            tomtom_api_key=os.getenv("TOMTOM_API_KEY"),
             clickhouse_host=os.getenv("CLICKHOUSE_HOST", "localhost"),
             clickhouse_port=int(os.getenv("CLICKHOUSE_PORT", "8123")),
             clickhouse_username=os.getenv("CLICKHOUSE_USERNAME", "default"),
             clickhouse_password=os.getenv("CLICKHOUSE_PASSWORD", ""),
         )
+
+    def require_tomtom_api_key(self) -> str:
+        if not self.tomtom_api_key:
+            raise RuntimeError("TOMTOM_API_KEY is required for TomTom ingestion. Add it to the ignored .env file.")
+        return self.tomtom_api_key
