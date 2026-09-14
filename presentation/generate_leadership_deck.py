@@ -81,9 +81,11 @@ def metric_card(slide, title, value, detail, x, accent):
 
 def main():
     client = get_client(Settings.from_environment())
-    mobility = query(client, "SELECT city_id, median_congestion_ratio, valid_sample_coverage_pct FROM mart.city_mobility_daily FINAL ORDER BY local_date DESC, city_id LIMIT 3")
-    scores = query(client, "SELECT city_id, weighted_coverage_pct, score_status FROM mart.city_intelligence_daily FINAL ORDER BY local_date DESC, city_id LIMIT 3")
+    mobility = query(client, "SELECT city_id, median_congestion_ratio, valid_sample_coverage_pct FROM mart.city_mobility_daily FINAL ORDER BY local_date DESC LIMIT 1 BY city_id")
+    scores = query(client, "SELECT city_id, weighted_coverage_pct, score_status FROM mart.city_intelligence_daily FINAL ORDER BY local_date DESC LIMIT 1 BY city_id")
     runs = query(client, "SELECT status, count() AS count FROM control.ingestion_run FINAL GROUP BY status")
+    traffic_fact_count = query(client, "SELECT count() AS count FROM warehouse.fact_traffic_flow_observation FINAL")[0]["count"]
+    latest_commercial = query(client, "SELECT status, error_message FROM control.ingestion_run FINAL WHERE source_id = 'openstreetmap_overpass_commercial_v1' ORDER BY started_at DESC LIMIT 1")[0]
     run_counts = {row["status"]: row["count"] for row in runs}
     city_names = {"lagos_ng": "Lagos", "abuja_ng": "Abuja", "cape_town_za": "Cape Town"}
 
@@ -106,7 +108,7 @@ def main():
 
     slide = new_slide(prs, "The platform is working end to end", "Live sources flow into ClickHouse facts, quality controls, and business marts.", 2)
     metric_card(slide, "Cities served", "3", "Lagos, Abuja, and Cape Town", 0.55, TEAL)
-    metric_card(slide, "Live traffic facts", "15", "Five validated road samples per city", 4.80, GREEN)
+    metric_card(slide, "Traffic facts stored", str(traffic_fact_count), "Five configured road samples per city", 4.80, GREEN)
     metric_card(slide, "Operational source runs", str(sum(run_counts.values())), f"{run_counts.get('completed', 0)} completed; failures retained as evidence", 9.05, AMBER)
     add_text(slide, "What this proves", 0.55, 4.85, 2.0, 0.25, 14, NAVY, True)
     add_text(slide, "The implementation is not a mock-up. Real TomTom, Open-Meteo, FX, OpenStreetMap, and World Bank responses have been acquired, validated, and made queryable.", 0.55, 5.28, 11.7, 0.55, 17, INK)
@@ -134,11 +136,11 @@ def main():
     add_text(slide, "Deterministic observation keys | run IDs | source checksums | freshness | validation outcomes | recovery history", 2.55, 4.93, 9.4, 0.22, 14, INK, True)
 
     slide = new_slide(prs, "Failure is recorded and recovery is demonstrable", "The platform retains operational history instead of hiding source problems.", 5)
-    metric_card(slide, "Overpass incident", "HTTP 406", "Initial commercial request failed and was logged", 0.55, RED)
-    metric_card(slide, "Recovery", "POST retry", "Completed after connector adjustment", 4.80, GREEN)
+    metric_card(slide, "Latest commercial run", latest_commercial["status"].upper(), "Rate-limited source failure is retained and visible", 0.55, RED)
+    metric_card(slide, "Recovery design", "Buffered write", "Future snapshots publish only after all cities are acquired", 4.80, GREEN)
     metric_card(slide, "Duplicate rerun", "0 inserts", "Second TomTom run kept the fact count stable", 9.05, TEAL)
     add_text(slide, "Why this matters", 0.55, 4.85, 1.9, 0.25, 14, NAVY, True)
-    add_text(slide, "An independent engineer can see what failed, inspect the source evidence, correct the connector, rerun the workflow, and prove that recovery did not duplicate records.", 0.55, 5.28, 11.7, 0.55, 17, INK)
+    add_text(slide, "An independent engineer can see what failed, inspect the source evidence, wait for the provider limit to clear, rerun the workflow, and prove that recovery did not duplicate records.", 0.55, 5.28, 11.7, 0.55, 17, INK)
 
     slide = new_slide(prs, "The City Intelligence Score refuses to overstate certainty", "Components remain visible, but a rank is withheld until the evidence is sufficient.", 6)
     for index, row in enumerate(scores):
