@@ -25,7 +25,7 @@ See `docs/runbook.md`.
 
 The `analytics/business_questions.sql` asset provides the implemented cross-domain questions. Run `analytics/question_readiness.sql` before interpreting results, and read `docs/question-coverage-plan.md` before claiming trend, fuel-economics, population-density, or score conclusions.
 
-For an instructor-authorized capability demonstration using segregated simulated values, see `docs/synthetic-demonstration.md`. It runs on a separate database and dashboard and must never be presented as live source evidence.
+For an instructor-authorized capability demonstration using segregated simulated values, see `docs/synthetic-demonstration.md`.
 
 ## View the live dashboard
 
@@ -35,4 +35,4 @@ After ClickHouse and at least one collection workflow are running, start the rea
 .venv/bin/python -m africa_pulse.dashboard
 ```
 
-Open `http://127.0.0.1:8765` in a browser or VS Code's Simple Browser. It reads the ClickHouse marts and control tables every minute; it does not expose credentials or mutate warehouse data.
+Open `http://127.0.0.1:8765` in a browser or VS Code's Simple Browser.
