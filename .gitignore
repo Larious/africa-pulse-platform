@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+.venv/
+.venv.*
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.egg-info/
+data/raw/
+data/derived/
+logs/
+
+# Local-only presentation and defense materials.
+presentation/
+docs/presentation-defense-guide.md
+docs/technical-defense-runbook.md

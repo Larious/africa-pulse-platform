@@ -1,0 +1,63 @@
+sources:
+  - source_id: tomtom_traffic_flow_v4
+    source_name: TomTom Traffic Flow API
+    domain: mobility
+    refresh_cadence: "every 2 hours"
+    access_method: HTTPS API key
+    observation_grain: "one provider response for one configured road sample in one collection slot"
+    retention_policy: "Store request metadata and normalised measures until API retention terms are reviewed; do not persist full payloads."
+    attribution_required: true
+    known_limitations:
+      - "Traffic flow is a congestion proxy, not ridership, passenger demand, or revenue."
+      - "Configured road samples represent selected road locations, not all roads in a city."
+  - source_id: open_meteo_weather_v1
+    source_name: Open-Meteo Forecast API
+    domain: climate
+    refresh_cadence: "every 2 hours"
+    access_method: HTTPS public API
+    observation_grain: "one weather snapshot at one configured city reference coordinate"
+    retention_policy: "Store source payload locally in ignored raw evidence storage with request metadata and checksum."
+    attribution_required: true
+    known_limitations:
+      - "A coordinate-based model estimate is not a city-wide sensor network."
+  - source_id: open_meteo_air_quality_v1
+    source_name: Open-Meteo Air Quality API
+    domain: environment
+    refresh_cadence: "every 2 hours"
+    access_method: HTTPS public API
+    observation_grain: "one modelled air-quality snapshot at one configured city reference coordinate"
+    retention_policy: "Store source payload locally in ignored raw evidence storage with request metadata and checksum."
+    attribution_required: true
+    known_limitations:
+      - "Values are modelled estimates and must not be presented as ground-station measurements."
+  - source_id: exchange_rate_api_usd_v6
+    source_name: ExchangeRate-API USD endpoint
+    domain: market
+    refresh_cadence: "every 2 hours"
+    access_method: HTTPS public endpoint
+    observation_grain: "one USD-to-currency rate snapshot per target currency"
+    retention_policy: "Store source payload locally in ignored raw evidence storage with request metadata and checksum."
+    attribution_required: true
+    known_limitations:
+      - "The selected endpoint supports current snapshots; historical comparisons begin at platform launch unless a licensed historical provider is added."
+  - source_id: openstreetmap_overpass_commercial_v1
+    source_name: OpenStreetMap via Overpass API
+    domain: commercial_geospatial
+    refresh_cadence: "weekly"
+    access_method: HTTPS public API
+    observation_grain: "one commercial-POI category count for one configured city candidate area and snapshot time"
+    retention_policy: "Store source payload locally in ignored raw evidence storage with request metadata and checksum."
+    attribution_required: true
+    known_limitations:
+      - "Snapshot areas are initial bounding boxes, not final approved municipal boundaries."
+      - "OpenStreetMap completeness varies by category and city."
+  - source_id: world_bank_indicators_v2
+    source_name: World Bank Indicators API
+    domain: economic_context
+    refresh_cadence: "monthly"
+    access_method: HTTPS public API
+    observation_grain: "one country indicator, reference year, and published source value"
+    retention_policy: "Store source payload locally in ignored raw evidence storage with request metadata and checksum."
+    attribution_required: true
+    known_limitations:
+      - "Indicators are country-level and periodic; they must not be presented as city-level observations."
