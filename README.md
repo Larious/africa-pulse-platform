@@ -12,7 +12,6 @@ Africa Pulse is a production-oriented urban-intelligence data platform for Lagos
 | `warehouse/ddl/` | ClickHouse databases, dimensions, facts, quality tables, and marts. |
 | `orchestration/` | Scheduled and backfill workflows. |
 | `analytics/` | Business queries, dashboard definitions, and metric assets. |
-| `presentation/` | Regenerable leadership briefing sourced from live warehouse evidence. |
 | `tests/` | Automated unit and integration tests. |
 | `docs/` | Architecture, contracts, runbooks, lineage, and decisions. |
 
