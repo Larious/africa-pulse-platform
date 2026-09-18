@@ -47,3 +47,7 @@ Primary quality rule: `commercial.count_non_negative`. Invalid values are quaran
 Required values: country code, indicator code and name, reference year, finite numeric value, source ID, run ID, received timestamp, and response checksum.
 
 Primary quality rule: `economic.value_present`. A release may arrive after its reference year; both the source reference year and platform received time remain stored.
+
+## Shared behavior
+
+Every fact carries `source_id`, `run_id`, an observation identity, a source/received timestamp where available, and a response checksum. Observation identities are deterministic for scheduled sources, so retries are idempotent. Invalid observations are retained as quality outcomes and excluded from consumer facts. A late source release is stored with its original reference period and receipt time; a mart refresh makes the newly available period visible without changing the historical source record.

@@ -51,6 +51,14 @@ The commercial workflow records category counts from an OpenStreetMap candidate-
 
 Every future ingestion command must record a `run_id`, write source evidence metadata, and use a deterministic observation key for the scheduled collection slot. Rerunning a failed slot must update the same logical observation rather than multiply it.
 
+## Monitor and troubleshoot
+
+Run the operational queries in `analytics/operational_health.sql` and `analytics/question_readiness.sql` before interpreting a dashboard result. Inspect `control.ingestion_run` for `running`, `completed`, `partial`, or `failed` status; then use `run_id` to join `control.raw_evidence` and `quality.rule_result`. A `partial` traffic run means some provider points were unavailable and must be reported with coverage. A stale source means its latest observation exceeded the source SLA; rerun the relevant connector only after checking the provider response and rate limits.
+
+## Backfill or replay
+
+The collectors are scheduled snapshot jobs rather than unrestricted historical APIs. To replay a missed interval, restore the source evidence permitted by its terms, run the relevant module with the same configuration, then run `python -m africa_pulse.orchestration.refresh_marts`. Deterministic observation keys make the replay idempotent. Do not create historical observations by copying a current snapshot into an earlier date; if the provider cannot supply the missing period, leave it missing and record the limitation.
+
 ## Schedule the collection
 
 Use the supplied macOS installer to create per-user `launchd` schedules. It records output under ignored `logs/` and keeps the absolute project path out of Git.

@@ -8,17 +8,23 @@
 
 **Trade-off:** It measures sampled road conditions, not passenger demand, fare revenue, or public-transport ridership.
 
+**Rejected alternatives:** Combining different mobility providers by city would weaken comparability because their coverage, definitions, and update timing differ. A ridership source was not available with the same permitted access and city coverage for all three cities.
+
 ## ADR-002: Store TomTom metadata and normalised measures, not full payloads
 
 **Decision:** Retain request fingerprint, response checksum, source context, and normalised traffic fields while full-payload retention remains subject to terms review.
 
 **Reason:** This preserves traceability without assuming the account permits long-term storage of complete provider responses.
 
+**Rejected alternative:** Storing every provider payload indefinitely would improve forensic detail but could violate account terms and increase sensitive-data retention without a documented need.
+
 ## ADR-003: Use two-hour source collection
 
 **Decision:** Poll the 15 currently validated TomTom road samples every two hours.
 
 **Reason:** The free plan provides 20,000 calls per month. Ten planned samples per city at 12 runs per day use about 10,800 calls per month; hourly polling would exceed the quota before retries.
+
+**Rejected alternative:** Hourly collection would provide finer temporal resolution but would consume the quota before retries and reduce operational headroom.
 
 ## ADR-004: Treat initial commercial areas as candidate bounding boxes
 
@@ -27,6 +33,8 @@
 **Reason:** They allow an initial reproducible source integration before approved municipal boundary files are supplied.
 
 **Trade-off:** Counts are not city-census values and must not be compared as density until a boundary and population denominator are approved.
+
+**Rejected alternative:** Treating the bounding box as a municipal boundary would make the chart look complete but would produce an indefensible denominator and misleading city comparisons.
 
 ## ADR-005: Recover Overpass requests through POST
 

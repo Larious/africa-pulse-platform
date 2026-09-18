@@ -2,7 +2,7 @@
 
 ## Conformed concepts
 
-`dim_city` defines the city ID, timezone, currency, and boundary version used by every city-level fact. `dim_source` records source contract metadata. `dim_road_sample` records the selected traffic reference locations. All source facts carry source ID, run ID, received time, response checksum, and a deterministic observation key.
+`dim_city` defines the city ID, timezone, currency, and boundary version used by every city-level fact. `dim_source` records source contract metadata. `dim_road_sample` records the selected traffic reference locations. All source facts carry source ID, run ID, received time, response checksum, and a deterministic observation key. `control.ingestion_run` and `control.raw_evidence` are the operational and provenance tables; `quality.rule_result` records validation outcomes before publication.
 
 ## Facts
 
@@ -16,6 +16,8 @@
 | `fact_economic_indicator_release` | One country indicator release for a reference year | A later source release is a new arrival, not a rewrite of its reference period. |
 
 Dimensions are latest-state reference tables at this milestone. If road sample selection, city boundaries, or source contracts change, a new effective-dated row is inserted; prior facts retain their original foreign-key values and boundary version.
+
+The natural keys are `city_id` for a city, `road_sample_id` for a sampled location, and `source_id` for a connector contract. Facts link to those IDs and retain their own observation identity, so changing a dimension version does not rewrite historical observations.
 
 ## Marts
 

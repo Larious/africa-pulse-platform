@@ -1,13 +1,13 @@
 # Source Register
 
-| Source ID | Domain | Access | Grain | Refresh | Important limitation |
-|---|---|---|---|---|---|
-| `tomtom_traffic_flow_v4` | Mobility | API key | One response per selected road sample and two-hour slot | Every 2 hours | A road-flow congestion proxy; it is not ridership, passenger demand, or fare revenue. Full payload retention awaits terms review. |
-| `open_meteo_weather_v1` | Climate | Public HTTPS API | One current weather snapshot at a city reference coordinate | Every 2 hours | A coordinate-based model estimate cannot represent all conditions across a city. |
-| `open_meteo_air_quality_v1` | Environment | Public HTTPS API | One current modelled air-quality snapshot at a city reference coordinate | Every 2 hours | Modelled concentrations are not ground-station readings. |
-| `exchange_rate_api_usd_v6` | Market | Public HTTPS API | One USD-to-NGN or USD-to-ZAR rate snapshot | Every 2 hours | Current snapshots establish history from platform launch; they do not create a long historical series retrospectively. |
-| `openstreetmap_overpass_commercial_v1` | Commercial geospatial | Public HTTPS API | One category count for a candidate city area and snapshot | Weekly | Candidate bounding boxes are not approved municipal boundaries; OpenStreetMap completeness varies. |
-| `world_bank_indicators_v2` | Economic context | Public HTTPS API | One country indicator release and reference year | Monthly | Country-level context must not be presented as a city observation. |
+| Source ID | Domain | Access | Grain | Refresh | Identifiers captured | Important limitation |
+|---|---|---|---|---|---|---|
+| `tomtom_traffic_flow_v4` | Mobility | API key | One response per selected road sample and two-hour slot | Every 2 hours | `source_id`, `run_id`, city/road sample IDs, request fingerprint, response checksum, observation key | A road-flow congestion proxy; it is not ridership, passenger demand, or fare revenue. Full payload retention awaits terms review. |
+| `open_meteo_weather_v1` | Climate | Public HTTPS API | One current weather snapshot at a city reference coordinate | Every 2 hours | `source_id`, `run_id`, city ID, source timestamp, response checksum, observation key | A coordinate-based model estimate cannot represent all conditions across a city. |
+| `open_meteo_air_quality_v1` | Environment | Public HTTPS API | One current modelled air-quality snapshot at a city reference coordinate | Every 2 hours | `source_id`, `run_id`, city ID, source timestamp, response checksum, observation key | Modelled concentrations are not ground-station readings. |
+| `exchange_rate_api_usd_v6` | Market | Public HTTPS API | One USD-to-NGN or USD-to-ZAR rate snapshot | Every 2 hours | `source_id`, `run_id`, base/quote currency, collection slot, response checksum, observation key | Current snapshots establish history from platform launch; they do not create a long historical series retrospectively. |
+| `openstreetmap_overpass_commercial_v1` | Commercial geospatial | Public HTTPS API | One category count for a candidate city area and snapshot | Weekly | `source_id`, `run_id`, city/category, area definition, snapshot time, response checksum, observation key | Candidate bounding boxes are not approved municipal boundaries; OpenStreetMap completeness varies. |
+| `world_bank_indicators_v2` | Economic context | Public HTTPS API | One country indicator release and reference year | Monthly | `source_id`, `run_id`, country/indicator/reference year, received time, response checksum, observation key | Country-level context must not be presented as a city observation. |
 
 ## Access and evidence policy
 
