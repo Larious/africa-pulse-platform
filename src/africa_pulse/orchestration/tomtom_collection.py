@@ -157,11 +157,18 @@ def run() -> dict[str, int | str]:
     insert_run_state(client, run_id, SOURCE_ID, "running", started_at)
     source_client = TomTomTrafficClient(settings.require_tomtom_api_key())
     received = inserted = quarantined = 0
+    source_errors: list[str] = []
 
     try:
         for city in cities:
             for road_sample in city.road_samples:
-                response = source_client.fetch_flow(road_sample)
+                try:
+                    response = source_client.fetch_flow(road_sample)
+                except Exception as error:  # noqa: BLE001 - isolate one unavailable sample.
+                    source_errors.append(
+                        f"{city.city_id}/{road_sample.road_sample_id}: {safe_error_message(error)}"
+                    )
+                    continue
                 received += 1
                 evidence_id = uuid4()
                 insert_rows(
@@ -223,12 +230,24 @@ def run() -> dict[str, int | str]:
         )
         raise
 
-    insert_run_state(client, run_id, SOURCE_ID, "completed", started_at, received, inserted, quarantined)
+    status = "partial" if source_errors else "completed"
+    insert_run_state(
+        client,
+        run_id,
+        SOURCE_ID,
+        status,
+        started_at,
+        received,
+        inserted,
+        quarantined,
+        "; ".join(source_errors) if source_errors else None,
+    )
     return {
         "run_id": str(run_id),
         "records_received": received,
         "records_inserted": inserted,
         "records_quarantined": quarantined,
+        "records_failed": len(source_errors),
     }
 
 
@@ -249,7 +268,7 @@ def insert_run_state(
     quarantined: int = 0,
     error_message: str | None = None,
 ) -> None:
-    completed_at = datetime.now(UTC) if status in {"completed", "failed"} else None
+    completed_at = datetime.now(UTC) if status in {"completed", "partial", "failed"} else None
     insert_rows(
         client,
         "control.ingestion_run",

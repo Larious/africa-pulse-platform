@@ -2,6 +2,7 @@ import httpx
 
 from africa_pulse.acquisition.tomtom import TomTomTrafficClient
 from africa_pulse.config import RoadSample
+from africa_pulse.orchestration.tomtom_collection import safe_error_message
 
 
 def test_tomtom_http_error_does_not_include_request_url(monkeypatch):
@@ -24,3 +25,8 @@ def test_tomtom_http_error_does_not_include_request_url(monkeypatch):
         assert str(error) == "TomTom request failed with HTTP 400"
     else:
         raise AssertionError("Expected a sanitized TomTom error")
+
+
+def test_safe_error_message_redacts_query_credentials():
+    error = RuntimeError("https://api.example.test?point=1,2&key=secret-token")
+    assert safe_error_message(error) == "https://api.example.test?point=1,2&key=REDACTED"

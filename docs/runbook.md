@@ -29,7 +29,7 @@ Copy `.env.example` to `.env` and set `TOMTOM_API_KEY`. The local `.env` file is
 python -m africa_pulse.orchestration.tomtom_collection
 ```
 
-The command queries every configured road sample, writes run and evidence metadata, applies three traffic validation rules, and inserts only valid observations. A rerun in the same two-hour collection slot does not create a second fact for the same city and road sample.
+The command queries every configured road sample, writes run and evidence metadata, applies three traffic validation rules, and inserts only valid observations. A rerun in the same two-hour collection slot does not create a second fact for the same city and road sample. If TomTom cannot match one point to a covered road segment, that sample is recorded in the run error message, the remaining samples continue, and the run is marked `partial`; partial data must be described with its coverage status.
 
 ## Run public-source collection
 
