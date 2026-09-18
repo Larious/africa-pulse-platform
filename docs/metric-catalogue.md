@@ -9,4 +9,4 @@
 | USD rate | Currency/local city day | Latest USD-to-NGN or USD-to-ZAR snapshot for the day | Native quote convention is quote currency per USD. |
 | Country inflation context | City/local day | Latest World Bank `FP.CPI.TOTL.ZG` value for the city's country | Country-level context, never a city measurement. |
 | Commercial category count | City/category/snapshot | Count of deduplicated OpenStreetMap entities in the configured candidate area | Not density until approved city boundary and population denominator are supplied. |
-| City Intelligence Score | City/local day | Weighted 0-100 components when eligibility rules are met | Currently unavailable: only 50% weighted coverage exists, no approved commercial denominator, and insufficient history. |
+| City Intelligence Score | City/local day | Weighted 0-100 components when eligibility rules are met | Currently unavailable: current live mobility coverage is absent for Lagos/Abuja, no approved commercial denominator exists, and history is insufficient. |

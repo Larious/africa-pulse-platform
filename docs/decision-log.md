@@ -4,7 +4,7 @@
 
 **Decision:** Use TomTom Traffic Flow as the initial mobility source for Lagos, Abuja, and Cape Town.
 
-**Reason:** It returned the same road-level fields for all three cities during three live validation windows. A single provider makes the congestion proxy comparable across the portfolio.
+**Reason:** It provides one consistent road-level schema and works for the Cape Town validation points. The current credential returns `Point too far from nearest existing segment` for the configured Lagos and Abuja points, so the platform keeps those observations unavailable until provider coverage or road coordinates are resolved. A single provider remains the preferred comparable design, but coverage is an explicit operational gate.
 
 **Trade-off:** It measures sampled road conditions, not passenger demand, fare revenue, or public-transport ridership.
 

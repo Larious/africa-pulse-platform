@@ -17,7 +17,7 @@ Africa Pulse is a production-oriented urban-intelligence data platform for Lagos
 
 ## Current milestone
 
-The platform collects traffic, weather, air quality, foreign-exchange, commercial-context, and country-level economic data. TomTom Traffic Flow has validated live coverage in all three cities and provides a sampled congestion metric. The City Intelligence Score stays explicitly unavailable until its history and approved denominators satisfy the published score rules. See `docs/architecture.md` for the table grain, time policy, retention policy, and ClickHouse design rationale.
+The platform collects traffic, weather, air quality, foreign-exchange, commercial-context, and country-level economic data. TomTom Traffic Flow is configured as the comparable mobility source; the current credential returns usable road segments for Cape Town, while Lagos and Abuja currently return a provider `400` (`Point too far from nearest existing segment`) and are retained as unavailable rather than filled with invented traffic. The City Intelligence Score stays explicitly unavailable until its history and approved denominators satisfy the published score rules. See `docs/architecture.md` for the table grain, time policy, retention policy, and ClickHouse design rationale.
 
 ## Local setup
 

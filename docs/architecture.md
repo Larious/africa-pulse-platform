@@ -2,7 +2,7 @@
 
 ## Scope
 
-The first implemented source is TomTom Traffic Flow for Lagos, Abuja, and Cape Town. This source was selected because one provider returned the same live road-flow fields in all three cities during validation.
+The first implemented source is TomTom Traffic Flow, configured for Lagos, Abuja, and Cape Town. It was selected for its consistent road-flow schema. The current credential validation returns usable segments for Cape Town; Lagos and Abuja currently return the provider error `Point too far from nearest existing segment`, so those traffic observations remain unavailable until coverage or coordinates are resolved.
 
 ## Data path
 
