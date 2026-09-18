@@ -37,7 +37,6 @@ class TomTomTrafficClient:
         public_request = {
             "point": f"{road_sample.latitude},{road_sample.longitude}",
             "unit": "KMPH",
-            "version": "4/absolute/10",
         }
         request_fingerprint = hashlib.sha256(
             json.dumps(public_request, sort_keys=True).encode()
@@ -46,7 +45,9 @@ class TomTomTrafficClient:
 
         with httpx.Client(timeout=self._timeout_seconds) as client:
             response = client.get(FLOW_URL, params=params)
-            response.raise_for_status()
+            if response.is_error:
+                # Never propagate httpx's request URL because it includes the API key.
+                raise RuntimeError(f"TomTom request failed with HTTP {response.status_code}") from None
 
         payload = response.json()
         flow = payload["flowSegmentData"]

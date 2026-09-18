@@ -1,5 +1,6 @@
 import hashlib
 import json
+import re
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
@@ -11,6 +12,14 @@ from africa_pulse.warehouse.client import get_client, insert_rows
 
 CODE_VERSION = "initial-tomtom-vertical-slice"
 RETENTION_POLICY = "metadata_and_normalised_measures_only_pending_terms_review"
+
+
+def safe_error_message(error: Exception) -> str:
+    """Keep credentials and signed query parameters out of operational evidence."""
+    message = str(error)
+    message = re.sub(r"([?&]key=)[^&'\\\" ]+", r"\1REDACTED", message, flags=re.IGNORECASE)
+    message = re.sub(r"(https?://[^ ]*?)([?&]key=)[^&'\\\" ]+", r"\1\2REDACTED", message, flags=re.IGNORECASE)
+    return message[:1000]
 
 
 def collection_slot(timestamp: datetime) -> datetime:
@@ -210,7 +219,7 @@ def run() -> dict[str, int | str]:
                 )
     except Exception as error:
         insert_run_state(
-            client, run_id, SOURCE_ID, "failed", started_at, received, inserted, quarantined, str(error)
+            client, run_id, SOURCE_ID, "failed", started_at, received, inserted, quarantined, safe_error_message(error)
         )
         raise
 
